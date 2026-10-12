@@ -1,0 +1,403 @@
+---
+title: "Inspect and Clean"
+output: html_document
+date: "2024-08-23"
+---
+The goal of this document is to look through all of the variables of interest and
+make sure they are behaving in ways that seem correct. This will mainly involve
+looking at histograms and trying to do some quality checks.
+```{r}
+library(dplyr)
+library(tidyr)
+local_dir1 <- '/Users/victorpokorny/Library/CloudStorage/GoogleDrive-vpokorny123@gmail.com/My Drive/CAPR CHR Functioning/RData/'
+local_dir<- paste0(local_dir1)
+load(paste0(local_dir,'merged_data.RData'))
+source("~/Desktop/R_functions/funcs.R")
+
+# i think wide might be helpful for some inspections
+wide_df<-pivot_wider(merged_df, names_from = 'visit', values_from = -c('src_subject_id','visit'))
+
+
+```
+
+```{r}
+vars_to_inspect <- c('gfr_current_bl','gfr_current_12m','gfr_current_24m',
+                     'gfs_current_bl','gfs_current_12m','gfs_current_24m')
+for (j in vars_to_inspect){
+  label = j
+  vjp_hist(wide_df[[j]],j)
+}
+
+#these are all reasonable correlations
+scatterplot(wide_df$gfr_current_bl, wide_df$gfr_current_12m)
+scatterplot(wide_df$gfr_current_bl, wide_df$gfr_current_24m)
+scatterplot(wide_df$gfs_current_bl, wide_df$gfs_current_12m)
+scatterplot(wide_df$gfs_current_bl, wide_df$gfs_current_24m)
+
+# should be correlated
+scatterplot(merged_df$gfr_current,merged_df$gfs_current)
+```
+
+```{r}
+# kamin
+# the values below represent a 1 or 0 response from a single trial that is normalized by "confidence"
+# my primary concern about the confidence scores is that they are confounded with reaction time
+# likely a good idea to look at non-normalized scores as well
+# i also have a hankering to look at multiple trials, but maybe that's what the computational 
+# modeling is for?
+#the distributions are horrifically non-normal, but expectedly bimodal
+vars_to_inspect <- c('kamin_blocking_score','kamin_control_score',
+                     'kamin_blocking_score_raw', 'kamin_control_score_raw')
+for (j in vars_to_inspect){
+  label = j
+  vjp_hist(merged_df[[j]],j)
+}
+
+#we probably want to drop folks with a 0 on the trial we care about?
+```
+
+```{r}
+#prl
+#finish looking at this after re-pulling with cleaned values
+vars_to_inspect <- c('prl_total_wins','prl_total_losses',
+                     'prl_total_switches','prl_total_stays',
+                     'prl_total_win_stays','prl_total_lose_stays',
+                     'prl_total_win_switches','prl_total_lose_switches')
+for (j in vars_to_inspect){
+  label = j
+  vjp_hist(merged_df[[j]],j)
+}
+```
+
+```{r}
+#sws
+vars_to_inspect <- 
+  c('hit_sum_pre', #"intelligible" condition and response = 1 before hearing the sentences
+    'hit_sum_post', #same as above but after hearing the sentences
+    'miss_sum_pre', #"intelligible" condition and response = 0 before hearing the sentences
+    'miss_sum_post', #same as above but after hearing the sentences
+    'false_sum_pre', #"unintelligible" condition and response = 1 before hearing the sentences
+    'false_sum_post', #same as above but after hearing the sentences
+    'correj_sum_pre', #"unintelligible" condition and response = 0 before hearing the sentences
+    'correj_sum_post',  #same as above but after hearing the sentences
+    'dprime_pre', #ability to guess that the task wanted you to say the low freq is "intelligible"
+    'dprime_post',
+    'c_pre', #liberal or conservative response bias; this is what we actually care about
+    'c_post',
+    'beta_pre', #another measure of response bias; keeping cuz correlates with c < .8
+    'beta_post',
+    'd_change','c_change','beta_change')
+
+for (j in vars_to_inspect){
+  label = j
+  vjp_hist(merged_df[[j]],j)
+}
+
+
+```
+
+```{r}
+#eefrt
+vars_to_inspect <- 
+  c('eefrt_Hard_Prob_alltrials', #Proportion hard tasks chosen across all reward probability levels
+    'eefrt_HighProb_HardProp',   #Proportion hard tasks chosen across high probability (88%) trials 
+    'eefrt_Highest_Mag_HardProp', #Proportion hard tasks chosen for highest reward (level 4)
+    'eefrt_High_highest_Mag_HardProp', #Proportion hard tasks for two highest rewards (levels 3 and 4)
+    'eefrt_High_Prob_Highest_Mag_HardProp', #Proportion of hard tasks for highest reward (4) and prob trials (88%)
+    'eefrt_High_Prob_High_Highest_Mag_HardProp' #same as above but for reward levels 3 and 4 
+    )
+
+for (j in vars_to_inspect){
+  label = j
+  vjp_hist(merged_df[[j]],j)
+}  
+
+```
+
+```{r}
+#dd
+vars_to_inspect <- 
+  c('RT', 
+    'SmlK', #small reward k (i.e. discount rate)
+    'MedK', #medium reward k (i.e. discount rate)
+    'LrgK', #large reward
+    'SmlCons', #small reward consistency (do you make choices consistent with your k)
+    'MedCons', #medium reward consistency
+    'LrgCons', #large reward
+    'AvgCons',
+    'logAvgK'
+    )
+
+for (j in vars_to_inspect){
+  label = j
+  vjp_hist(merged_df[[j]],j)
+}  
+
+```
+
+```{r}
+#iaps
+vars_to_inspect <- 
+  c('iaps_NegArousal', #subject's rating of arousal to negative picture
+    'iaps_NegPleasant',
+    'iaps_NegUnpleasant',
+    'iaps_PosArousal', #subject's rating of arousal to positive picture
+    'iaps_PosPleasant',
+    'iaps_PosUnpleasant',
+    'iaps_NeutArousal', #subject's rating of arousal to positive picture
+    'iaps_NeutPleasant',
+    'iaps_NeutUnpleasant'
+    )
+
+for (j in vars_to_inspect){
+  label = j
+  vjp_hist(merged_df[[j]],j)
+}  
+
+```
+
+```{r}
+#speed_tap
+vars_to_inspect <- 
+  c('dominant_1',
+    'dominant_3',
+    'dominant_5',
+    'non-dominant_2',
+    'non-dominant_4',
+    'non-dominant_6',
+    'meantaps_dominant',
+    'meantaps_nondominant'
+    )
+
+for (j in vars_to_inspect){
+  label = j
+  vjp_hist(merged_df[[j]],j)
+}  
+
+
+```
+
+```{r}
+#ebbinghaus
+vars_to_inspect <- 
+  c('misleading_overall_perc_acc',
+    'misleading_index',
+    'misleading_sizediff2_perc_acc',
+    'misleading_index2SD',
+    'helpful_overall_perc_acc',
+    'helpful_index',
+    'helpful_sizediff2_perc_acc',
+    'helpful_index2SD',
+    'no_context_overall_perc_acc',
+    'nocontext_sizediff2_perc_acc',
+    'catch_trial_18_only',
+    'context_sensitivity_all_trials',
+    'context_sensitivity2SD'
+    )
+
+for (j in vars_to_inspect){
+  label = j
+  vjp_hist(merged_df[[j]],j)
+}  
+
+
+```
+
+```{r}
+#mooney
+vars_to_inspect <- 
+  c('catch_faces_reported',
+    'inverted_faces_reported',
+    'upright_faces_reported',
+    'inverted_gender_correct',
+    'upright_gender_correct',
+    'inverted_age_correct',
+    'upright_age_correct',
+    'scrambled_upright_faces_reported',
+    'scrambled_inverted_faces_reported'
+    )
+
+for (j in vars_to_inspect){
+  label = j
+  vjp_hist(merged_df[[j]],j)
+}  
+
+
+```
+
+```{r}
+#ch
+vars_to_inspect <- 
+  c('auditory_capr_online_nu',
+    'auditory_capr_online_beta',
+    'auditory_capr_online_omega2',
+    'auditory_capr_online_omega3'
+    )
+
+for (j in vars_to_inspect){
+  label = j
+  vjp_hist(merged_df[[j]],j)
+} 
+#weirdly high beta's but not gonna exclude for now
+```
+
+```{r}
+#pessig
+vars_to_inspect <- 
+  c('glat_GAINvLA',
+    'glat_GAINvLOSS',
+    'glat_LAvMISS',
+    #'MISSvLA' redundant with LAvMISS
+    'glat_Positive_Valid_Win_Stay',
+    'glat_Positive_Valid_Win_Shift',
+    'glat_Positive_Valid_Lose_Stay',
+    'glat_Positive_Valid_Lose_Shift',
+    'glat_Negative_Valid_Win_Stay',
+    'glat_Negative_Valid_Win_Shift',
+    'glat_Negative_Valid_Lose_Stay',
+    'glat_Negative_Valid_Lose_Shift')
+
+for (j in vars_to_inspect){
+  label = j
+  vjp_hist(merged_df[[j]],j)
+} 
+
+scatterplot(merged_df$glat_LAvMISS, merged_df$glat_MISSvLA)
+
+```
+
+```{r}
+#demo
+vars_to_inspect <- 
+  c(#'sex',
+    #'site',
+    'demo_hispanic',
+    'demo_middleeastern',
+    'demo_biological_sex',
+    'demo_gender_three_groups',
+    'demo_sexuality',
+    'demo_mother_edu',
+    'demo_father_edu',
+    'demo_us_born',
+    'demo_immigrated', # way too many NAs; avoid for now
+    'demo_refugee_status',
+    'demo_national_standing',
+    'demo_family_num',
+    'demo_community_standing',
+    'demo_community_race', # I don't know what the values mean so avoid for now
+    'demo_community', # I don't know what the values mean so avoid for now
+    'demo_parents_born_usa', # only has one value, avoid for now
+    'demo_household_income' # tricky variable cuz of low reporters, probably avoid for now
+    )
+
+for (j in vars_to_inspect){
+  label = j
+  barplot(table(merged_df[[j]]),main = label)
+  print(sum(is.na(merged_df[[j]]) & merged_df$visit == 'bl'))
+} 
+
+
+``` 
+
+
+
+```{r}
+merged_df<-merged_df %>% mutate(
+  `Role Functioning`                = gfr_current,
+  `Social Functioning`              = gfs_current,
+   `Blocking Score (Kamin)`                   = kamin_blocking_score,
+  `Gain vs Loss Avoidance (GLAT)`            = glat_GAINvLA,
+  #need to compute acquisition win vs loss because above is test phase
+  #Gold et al. says to subtract fourth block 90%
+  `Gain vs Loss (Acquisition)` = glat_Win90_4 - glat_LA90_4,
+  `Win-Stays (PRL)`                          = prl_total_win_stays,
+  `Win-Switches (PRL)`                       = prl_total_win_switches,
+  `Large Reward K (Delayed Discounting)`     = LrgK,
+  `Context Sensitivity (Ebbinghaus)`         = context_sensitivity_all_trials,
+  `Change in d' (SWS)`                       = d_change,
+  `Inverted Face Reports (Mooney Faces)`     = inverted_faces_reported,
+  `Hits All (SWS)`                           = hit_sum_all,
+  `Speech Reports (SWS)`                     = total_yes_responses_all,
+  `Finger Tapping Speed (CFT)`               = meantaps_dominant,
+  `High Effort, High Reward Scores (EEFRT)`  = eefrt_Highest_Mag_HardProp, 
+  `Omega3 Volatility (CH)`                   = ch_omega3,
+  `Nu Evidence vs. Belief (CH)`              = ch_nu, 
+  `Hedonic Reactivity (HR)`                  = iaps_PosPleasant,
+  phenotype_four_groups                      = as.factor(phenotype_four_groups)
+)
+save(merged_df,
+     file = paste0(local_dir,'merged_data_sparse.RData'))
+
+
+#wide_df<-tidyr::pivot_wider(merged_df, names_from = 'visit', 
+#                            values_from = -c('src_subject_id','visit'))
+#now save out sparser df
+#let's create some prettier names and then save out
+wide_df<-wide_df %>% mutate(
+  `Blocking Score (Kamin)`                   = kamin_blocking_score_bl,
+  `Gain vs Loss Avoidance (GLAT)`            = glat_GAINvLA_bl,
+  `Win-Stays (PRL)`                          = prl_total_win_stays_bl,
+  `Win-Switches (PRL)`                       = prl_total_win_switches_bl,
+  `Large Reward K (Delayed Discounting)`     = LrgK_bl,
+  `Context Sensitivity (Ebbinghaus)`         = context_sensitivity_all_trials_bl,
+  `Change in d' (SWS)`                       = d_change_bl,
+   #Win90_4 = as.numeric(substr(glat_Win90_4_bl, 1, nchar(glat_Win90_4_bl) - 1)),
+   #LA90_4 = as.numeric(substr(glat_LA90_4_bl, 1, nchar(glat_LA90_4_bl) - 1)),
+  `Gain vs Loss (Acquisition)` = glat_Win90_4_bl - glat_LA90_4_bl,
+  `Inverted Face Reports (Mooney Faces)`     = inverted_faces_reported_bl,
+  `Hits All (SWS)`                           = hit_sum_all_bl,
+  `Speech Reports (SWS)`                     = total_yes_responses_all_bl,
+  `Finger Tapping Speed (CFT)`               = meantaps_dominant_bl,
+  `High Effort, High Reward Scores (EEFRT)`  = eefrt_Highest_Mag_HardProp_bl, 
+  `Omega3 Volatility (CH)`                   = ch_omega3_bl,
+  `Nu Evidence vs. Belief (CH)`              = ch_nu_bl, 
+  `Hedonic Reactivity (HR)`                  = iaps_PosPleasant_bl,
+  `Baseline Role Functioning`                = gfr_current_bl,
+  `Baseline Social Functioning`              = gfs_current_bl,
+  `12m Role Functioning`                     = gfr_current_12m,
+  `12m Social Functioning`                   = gfs_current_12m,
+  `24m Role Functioning`                     = gfr_current_12m,
+  `24m Social Functioning`                   = gfs_current_12m,
+  `12m Change Role Functioning`              = gfr_current_12m - gfr_current_bl,
+  `12m Change Social Functioning`            = gfs_current_12m - gfs_current_bl,
+  `24m Change Role Functioning`              = gfr_current_24m - gfr_current_bl,
+  `24m Change Social Functioning`            = gfs_current_24m - gfs_current_bl, 
+  `12m to 24m Change Role Functioning`       = gfr_current_24m - gfr_current_12m,
+  `12m to 24m Change Social Functioning`     = gfs_current_24m - gfs_current_12m
+)
+wide_df$gfr_change_groups<- ifelse(wide_df$`12m Change Role Functioning` <= -1,
+                                   'negative',
+                               ifelse(wide_df$`12m Change Role Functioning` >=1,
+                                      'positive','stable'))
+wide_df$gfs_change_groups<- ifelse(wide_df$`12m Change Social Functioning` <= -1,
+                                   'negative',
+                               ifelse(wide_df$`12m Change Social Functioning` >=1,
+                                      'positive','stable'))
+
+#create timepoint 1 and timepoint 2 variables so we can include folks that missed 12m,
+#but came in for 24m
+wide_df<- wide_df %>% 
+  mutate(
+    `Timepoint 1 Social Functioning` = gfs_current_bl,
+    `Timepoint 1 Role Functioning` = gfr_current_bl,
+    `Timepoint 2 Social Functioning` = case_when(
+           #when 12m is missing, but 24m is not then 24m becomes time 2
+           is.na(gfs_current_12m) &
+             !is.na(gfs_current_24m) ~ gfs_current_24m,
+           #else time2 = gfs_current_12m
+           .default = gfs_current_12m),
+    `Timepoint 2 Role Functioning` = case_when(
+           #when 12m is missing, but 24m is not then 24m becomes time 2
+           is.na(gfr_current_12m) &
+             !is.na(gfr_current_24m) ~ gfr_current_24m,
+           #else time2 = gfs_current_12m
+           .default = gfr_current_12m),
+    `Timepoint Change Social Functioning` = `Timepoint 2 Social Functioning` -
+                                            `Timepoint 1 Social Functioning`,
+    `Timepoint Change Role Functioning` = `Timepoint 2 Role Functioning` -
+                                            `Timepoint 1 Role Functioning`)
+
+#save out
+save(wide_df, file = paste0(local_dir,'wide_data_sparse.RData'))
+
+```
