@@ -14,6 +14,12 @@ local_dir<- paste0(local_dir1)
 load(paste0(local_dir,'merged_data.RData'))
 source("~/Desktop/R_functions/funcs.R")
 
+converters_subs<- c("20099", "20322", "20248", "20209", "20960", "30498", "30665",
+         "40271", "51018", "51028", "60591", "20559", "31130", "20613",
+         "51253", "50088", "40695", "51187", "31266", "51400", "51484",
+         "31306", "31501", "20907", "41491")
+merged_df$conversion<- ifelse(merged_df$src_subject_id %in% converters_subs,1,0)
+
 # i think wide might be helpful for some inspections
 wide_df<-pivot_wider(merged_df, names_from = 'visit', values_from = -c('src_subject_id','visit'))
 
@@ -312,7 +318,8 @@ merged_df<-merged_df %>% mutate(
   `Gain vs Loss (Acquisition)` = glat_Win90_4 - glat_LA90_4,
   `Win-Stays (PRL)`                          = prl_total_win_stays,
   `Win-Switches (PRL)`                       = prl_total_win_switches,
-  `Large Reward K (Delayed Discounting)`     = LrgK,
+  `Large Reward K (Delay Discounting)`       = LrgK,
+  `K (Delay Discounting)`                    = logAvgK,
   `Context Sensitivity (Ebbinghaus)`         = context_sensitivity_all_trials,
   `Change in d' (SWS)`                       = d_change,
   `Inverted Face Reports (Mooney Faces)`     = inverted_faces_reported,
@@ -338,7 +345,8 @@ wide_df<-wide_df %>% mutate(
   `Gain vs Loss Avoidance (GLAT)`            = glat_GAINvLA_bl,
   `Win-Stays (PRL)`                          = prl_total_win_stays_bl,
   `Win-Switches (PRL)`                       = prl_total_win_switches_bl,
-  `Large Reward K (Delayed Discounting)`     = LrgK_bl,
+  `Large Reward K (Delay Discounting)`       = LrgK_bl,
+  `K (Delay Discounting)`                    = logAvgK_bl,
   `Context Sensitivity (Ebbinghaus)`         = context_sensitivity_all_trials_bl,
   `Change in d' (SWS)`                       = d_change_bl,
    #Win90_4 = as.numeric(substr(glat_Win90_4_bl, 1, nchar(glat_Win90_4_bl) - 1)),

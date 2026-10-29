@@ -4,11 +4,12 @@ local_dir <- '/Users/victorpokorny/Library/CloudStorage/GoogleDrive-vpokorny123@
 
 variables_to_load<-c(
   #tasks (skipping pessiglione and ch because  don't have clean scripts)
-  "kamin_model","kamin","prl","sws","eefrt","dd","iaps","nsipr","sips_n","demographics_overview",
+  "kamin_model","kamin","prl","sws","eefrt","dd","iaps","nsipr","sips_all",
+  "demographics_overview","medlog",'scid',
   "speed_tap","ebbinghaus","mooney_vjp","ch","glat",  #functioning measures
   "gfs","gfr","bacs","hvlt","sps","wrat",
   #demographics
-  "demo", 'sips_p','nda_study_intake', 'sips_scoresheet','cesd'
+  "demo",'nda_study_intake','cesd'
 )
 for (j in variables_to_load) {
   load(paste0(local_dir,j,'_clean.RData'))
